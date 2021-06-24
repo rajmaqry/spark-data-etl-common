@@ -1,0 +1,314 @@
+data_source:
+  name: "bis_content_centric"
+  type: "content"
+  buid_prefix: "BI"
+  content_centric_columns:
+    - names
+    - addresses
+    - ssns
+    - dobs
+  rejection_criteria:
+    required_fields:
+      - names
+    essential_fields:
+      - names
+      - addresses
+      - phones
+      - emails
+      - dobs
+      - ssns
+    minimum_essential_fields_required: 2
+description: "bis content centric parser"
+
+raw_file_info:
+  - id: "tr_ind_owner_guar"
+    data_set: "tr_ind_owner_guar"
+    file_type: "CSV"
+    delimiter: ","
+    header_present: False
+    column_rename:
+      '_c0': 'supplier_nb'
+      '_c1': 'sin'
+      '_c2': 'tin_prefix_id'
+      '_c3': 'tin_suffix_nb'
+      '_c5': 'hsh_nb'
+      '_c8': 'first_nm'
+      '_c9': 'middle_nm'
+      '_c10': 'surname'
+      '_c11': 'generation_cd'
+      '_c12': 'birth_date'
+      '_c14': 'ssn'
+      '_c15': 'state_cd'
+      '_c16': 'zip5_cd'
+      '_c17': 'zip4_cd'
+      '_c18': 'country_cd'
+      '_c20': 'phone_nb'
+      '_c23': 'create_db_dt'
+      '_c24': 'upd_db_dt'
+      '_c25': 'upd_db_id'
+      '_c26': 'str_addr_1'
+      '_c27': 'str_addr_2'
+      '_c28': 'city_nm'
+      '_c29': 'email_addr'
+      '_c30': 'cid'
+
+  - id: "bus_family_assoc"
+    data_set: "bus_family_assoc"
+    file_type: "CSV"
+    delimiter: ","
+    header_present: False
+    column_rename:
+      '_c0': 'parent_pbin'
+      '_c1': 'pbin'
+      '_c3': 'pbin_create_db_dt'
+      '_c4': 'pbin_upd_db_dt'
+
+  - id: "fasttrak_tr_acct"
+    data_set: "fasttrak_tr_acct"
+    file_type: "CSV"
+    delimiter: ","
+    header_present: False
+    column_rename:
+      '_c0': 'pbin'
+      '_c1': 'extract_dt'
+      '_c2': 'tin_prefix_id'
+      '_c3': 'supplier_nb'
+      '_c4': 'sin'
+      '_c5': 'tin_suffix_nb'
+      '_c6': 'BUS_CAT_NB'
+      '_c7': 'lvid'
+      '_c8': 'oldest_extract_dt'
+      '_c9': 'acct_dup_in'
+      '_c10': 'crt_display_in'
+
+pre_process_data_frames:
+  pre_process_type: 'custom'
+  custom: "bis_content_centric_parser.BisContentCentric"
+
+transformations:
+  - id: "agg_tr_ind_owner_guar"
+    content_record_mappings:
+      - column_name: "names"
+        mappings:
+          - mapping_type: 'config'
+            required_elements:
+              - first_name
+              - last_name
+            config:
+              first_name:
+                lookup_type: 'column_name'
+                lookup_ref: "first_nm"
+              middle_name:
+                lookup_type: 'column_name'
+                lookup_ref: "middle_nm"
+              last_name:
+                lookup_type: 'column_name'
+                lookup_ref: "surname"
+              generation_code:
+                lookup_type: 'column_name'
+                lookup_ref: "generation_cd"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+              updt_db_id:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_id"
+      - column_name: "ssns"
+        values_to_ignore:
+          - 'UNK'
+        mappings:
+          - mapping_type: 'config'
+            config:
+              ssn:
+                lookup_type: 'column_name'
+                lookup_ref: "ssn"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+              updt_db_id:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_id"
+      - column_name: "dobs"
+        values_to_ignore:
+          - '01/01/0401'
+        mappings:
+          - mapping_type: 'config'
+            config:
+              dob:
+                lookup_type: 'column_name'
+                lookup_ref: "birth_date"
+                format: "%m/%d/%Y"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+      - column_name: "addresses"
+        mappings:
+          - mapping_type: 'config'
+            config:
+              address:
+                 - lookup_type: 'column_name'
+                   lookup_ref: "str_addr_1"
+                 - lookup_type: 'column_name'
+                   lookup_ref: "str_addr_2"
+                 - lookup_type: 'column_name'
+                   lookup_ref: "city_nm"
+                 - lookup_type: 'column_name'
+                   lookup_ref: "state_cd"
+                 - lookup_type: 'column_name'
+                   lookup_ref: "zip5_cd"
+                 - lookup_type: 'column_name'
+                   lookup_ref: "zip4_cd"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+      - column_name: "phones"
+        mappings:
+          - mapping_type: 'config'
+            config:
+              phone_number:
+                lookup_type: 'column_name'
+                lookup_ref: "phone_nb"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+      - column_name: "emails"
+        mappings:
+          - mapping_type: 'config'
+            config:
+              emails:
+                lookup_type: 'column_name'
+                lookup_ref: "email_addr"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+      - column_name: "other_ids"
+        mappings:
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "cid"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "cid"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "supplier_nb"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "supplier_nb"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "lvid"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "lvid"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "pbin"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "pbin"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "pbin_create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "pbin_upd_db_dt"
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "parent_pbin"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "parent_pbin"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "pbin_create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "pbin_upd_db_dt"
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "tin_prefix_id"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "tin_prefix_id"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+          - mapping_type: 'config'
+            config:
+              id_type:
+                lookup_type: 'static'
+                lookup_ref: "tin_suffix_nb"
+              id:
+                lookup_type: 'column_name'
+                lookup_ref: "tin_suffix_nb"
+              to_database_date:
+                lookup_type: 'column_name'
+                lookup_ref: "create_db_dt"
+              last_update_date:
+                lookup_type: 'column_name'
+                lookup_ref: "upd_db_dt"
+
+post_process_data_frames:
+  post_process_type: "reduce_by_key"
+  reduce_by_key:
+    deduping_columns: #TODO Rename this to be more meaningful
+      - other_ids
+      - names
+      - addresses
+      - phones
+      - emails
+      - dobs
+      - ssns
+

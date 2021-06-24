@@ -1,0 +1,165 @@
+application_name: "all_in_one"
+description: "all contextual data ETL"
+email: 'writ.raj@gmail.com'
+#--------------------All the RAW file information---------------------------
+#---------using this we can configure all the raw files---------------------
+#---------required for this ETL job to process.Here the---------------------
+#---------id stands as unique for each file and using  ---------------------
+#---------that we will refer to other pre/post processing-------------------
+#---------THIS ID for each raw file has to be unique------------------------
+#---------Using the data_set we can segregate different path----------------
+#---------in the inputPath provided in jobs args----------------------------
+raw_file_info:
+  - id: "rf_csv_del_01_sml"
+    data_set: "rf_csv_del_01_sml" #prefix path in the input path to read the raw file.
+    file_type: "CSV"
+    delimiter: "|"
+    header_present: False
+    manifest: False
+    id_column: "supplier_nb"
+    validation: True
+
+  - id: "rf_csv_del_02_sml"
+    data_set: "rf_csv_del_02_sml"
+    file_type: "json"
+    delimiter: ","
+    header_present: False
+    manifest: True
+    id_column: "parent_pbin"
+    validation: True
+
+  - id: "rf_csv_del_03_sml"
+    data_set: "rf_csv_del_03_sml"
+    file_type: "parquet"
+    delimiter: ""
+    header_present: True
+    manifest: False
+    id_column: "sbin"
+    validation: True
+
+pre_process_data_frames:
+  - id: "rf_csv_del_01_sml"
+    column_rename:
+      '_c0': 'supplier_nb'
+      '_c1': 'sin'
+      '_c2': 'tin_prefix_id'
+      '_c3': 'tin_suffix_nb'
+      '_c5': 'hsh_nb'
+      '_c8': 'first_nm'
+      '_c9': 'middle_nm'
+      '_c10': 'surname'
+    sql_query:
+      file: "pre_process_rf_del_01.txt"
+      delimeter: ";"
+  - id: "rf_csv_del_02_sml"
+    column_rename:
+      '_c0': 'parent_pbin'
+      '_c1': 'pbin'
+      '_c3': 'pbin_create_db_dt'
+      '_c4': 'pbin_upd_db_dt'
+  - id: "rf_csv_del_03_sml"
+    column_rename:
+      'A1': 'sbin'
+      'A2': 'sys_ot_ol'
+      'A3': 'idio_his_pen'
+      'A4': 'riv_hin_sppn'
+validation:
+  - id: "rf_csv_del_01_sml"
+    file_exist: True
+    record_count: False
+    not_null_check: True
+    unique_id_check: True
+    column_count: True
+  - id: "rf_csv_del_02_sml"
+    file_exist: True
+    record_count: True
+    not_null_check: True
+    unique_id_check: True
+    column_count: True
+    manifest:
+      type: 'file'
+      path: './abc/acac/manifest.csv'
+      format: 'csv'
+      delimeter: ","
+
+  - id: "rf_csv_del_03_sml"
+    file_exist: True
+    record_count: False
+    not_null_check: True
+    unique_id_check: True
+    column_count: True
+transformations:
+  - id: "rf_csv_del_01_sml"
+    schema_change:
+      supplier_nb:
+        lookup_type: 'column_name'
+        data_type: 'bigint'
+      sin:
+        lookup_type: 'column_name'
+        data_type: 'bigint'
+      tin_prefix_id:
+        lookup_type: 'column_name'
+        data_type: 'string'
+      hsh_nb:
+        lookup_type: 'column_name'
+        data_type: 'string'
+      first_nm:
+        lookup_type: 'column_name'
+        data_type: 'string'
+      10:
+        lookup_type: 'column_index'
+        data_type: 'string'
+      11:
+        lookup_type: 'column_index'
+        data_type: 'string'
+    join_data:
+      check_skew: True
+      skew_check_cols: 'first_nm,middle_nm,surname'
+      join_data:
+        lookup_type: 'id'
+        lookup_ref: 'rf_csv_del_03_sml'
+        do_group: True
+        output: 'outputpath'
+        group_col: 'sys_ot_ol,idio_his_pen,riv_hin_sppn'
+      join_query:
+        type: 'condition'
+        valye: 'first_nm = sys_ot_ol AND middle_nm = idio_his_pen AND surname = riv_hin_sppn'
+      join_type: 'left_outer'
+      output:
+        table: '01_03_joined'
+        path: 'outputpath'
+        format: 'parquet'
+        select: ""
+
+  - id: 'rf_csv_del_02_sml'
+    schema_change:
+      parent_pbin:
+        lookup_type: 'column_name'
+        data_type: 'bigint'
+      pbin:
+        lookup_type: 'column_name'
+        data_type: 'string'
+      pbin_create_db_dt:
+        lookup_type: 'column_name'
+        data_type: 'timestamp'
+        format: "%m/%d/%Y"
+      pbin_upd_db_dt:
+        lookup_type: 'column_name'
+        data_type: 'timestamp'
+        format: "%m/%d/%Y"
+    save_as:
+      format: 'parquet'
+
+
+post_process_data_frames:
+  post_process_type: "reduce_by_key"
+  reduce_by_key:
+    deduping_columns: #TODO Rename this to be more meaningful
+      - other_ids
+      - names
+      - addresses
+      - phones
+      - emails
+      - dobs
+      - ssns
+

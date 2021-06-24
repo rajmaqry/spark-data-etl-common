@@ -68,7 +68,14 @@ public class DataSubmitArgumentParser {
             //Looking for options array with value
             String name = findInArguments(arg,options);
             if(name != null){
-
+                if (value == null) {
+                    if (ind == args.size() - 1) {
+                        throw new IllegalArgumentException(
+                                String.format("Missing argument for option '%s'.", arg));
+                    }
+                    ind++;
+                    value = args.get(ind);
+                }
                 if(!handle(name,value)){
                     break;
                 }

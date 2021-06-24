@@ -12,6 +12,7 @@
         <module>data-common</module>
         <module>data-beans</module>
         <module>data-engine</module>
+        <module>data-distributed-storage</module>
     </modules>
     <properties>
         <global.current.version>1.0.0</global.current.version>
@@ -54,6 +55,11 @@
             <dependency>
                 <groupId>org.self.data.spark.common</groupId>
                 <artifactId>data-common</artifactId>
+                <version>${global.current.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.self.data.spark.common</groupId>
+                <artifactId>data-distributed-storage</artifactId>
                 <version>${global.current.version}</version>
             </dependency>
             <dependency>

@@ -1,8 +1,8 @@
 package common.data.spark.util
 
+import common.data.spark.beans.logger.Logging
 import common.data.spark.constant.DataConstant
 import common.data.spark.constant.DataConstant.DataPipeline
-import org.apache.logging.log4j.scala.Logging
 import org.apache.spark.sql.SparkSession
 
 object SparkSessionFactory extends Logging{

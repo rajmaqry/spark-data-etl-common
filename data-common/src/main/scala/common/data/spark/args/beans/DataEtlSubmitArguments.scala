@@ -1,10 +1,16 @@
 package common.data.spark.args.beans
 
+import common.data.distributed.storage.FileSystemUtility
+import common.data.spark.args.beans.ExecutionConfig.logger
 import common.data.spark.beans.exceptions.DataProcessException
+import common.data.spark.beans.logger.Logging
 import common.data.spark.constant.DataConstant.DataPipeline
-import common.data.spark.util.DataSubmitArgumentParser
-import org.apache.logging.log4j.scala.Logging
+import common.data.spark.util.{DataSubmitArgumentParser, SparkSessionFactory}
 
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
+
+import scala.collection.mutable
 import scala.collection.mutable.Seq
 import scala.jdk.CollectionConverters._
 
@@ -27,19 +33,69 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
   var partition :Int = 0
   var hiveTable :String = null
   var jobId :String = null
-  var metaConfig :MetaConfig = null
+  var executionConfig :ExecutionConfig = null
 
   //parse command arguments based on keys
   parse(args.asJava)
 
+  //create execution configurations for context
+  toExecutionConfig()
 
+  //validate YAML keys
+  validateConfigurations()
   def throwError(msg: String): Unit = throw new DataProcessException(msg)
 
-  def toMetaConfig(dataMetaPath: String): MetaConfig = {
-    null
+  private def validateRawFileInfo(): Either[String,Boolean] = {
+    var msg = ""
+    if(executionConfig.contains(RAW_FILE_INFO.key)){
+        val value = executionConfig.get(RAW_FILE_INFO.key)
+        value match{
+          case RAW_FILE_INFO.valueType => logger.info("valid child type for this configuration")
+          case _ => msg = s"=> ${value.getClass} Improper deceleration under ${RAW_FILE_INFO.key} in YAML file : $dataMetaPath \n"
+        }
+
+    }
+    Left(msg)
+  }
+
+  /**
+   * This method validates the YAML configuration files.
+   * It will use the [[ConfigBuilder]] from [[beans]] to get the
+   * required status, child units and type of values
+   * @param
+   */
+  def validateConfigurations(): Unit ={
+    var result = List.empty[Either[String,Boolean]]
+    //validate raw file info
+    result :+ validateRawFileInfo()
+    if(result.forall(_.isRight)){
+      logger.info(s"Validation successful for the configuration data present in :$dataMetaPath")
+    }else{
+      logger.error((result.collect{
+        case Left(v) => v
+      }).mkString("\n"))
+      throwError(s" Improper deceleration in YAML file : $dataMetaPath")
+    }
+  }
+  /**
+   *  This method to convert the YAML metadata configurations to  execution config class
+   *  [[ ExecutionConfig]]
+   *
+   *  @param executionConfig : use an existing one or create new one
+   */
+  def toExecutionConfig(executionConfig: Option[ExecutionConfig] = None): ExecutionConfig = {
+    logger.info(s"Trying to load configuration content from YAML file in path : $dataMetaPath")
+    val content = FileSystemUtility.getFileContent(dataMetaPath)
+    val yaml = new Yaml(new Constructor())
+    var config = executionConfig.getOrElse(new ExecutionConfig)
+    this.executionConfig = yaml.load(content).asInstanceOf[java.util.LinkedHashMap[String, Any]].asScala.foldLeft(config){
+      case (config,(k,v) ) => config.set(k,v)
+    }
+    this.executionConfig
   }
 
   override protected def handle(opt: String, value: String): Boolean = {
+    try{
     opt match {
       case INPUT_PATH =>
         inputPath = value
@@ -51,7 +107,7 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
         reportPath = value
       case META_CON_PATH =>
         dataMetaPath = value
-        metaConfig = toMetaConfig(dataMetaPath)
+        //metaConfig = toMetaConfig(dataMetaPath)
       case APP_NAME =>
         applicationName = value
       case JOIN_DATA_PAth =>
@@ -66,24 +122,35 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
         logger.info(s"unexpected argument : $opt")
         throwError(s"unexpected argument : $opt")
     }
-    false
+    }catch{
+      case e: Exception  => logger.error(s"unaccepted argument or value for arg : $opt and passed value :$value")
+        throw e
+    }
+    true
   }
 
   override def toString: String = {
     val s = s"""
-                      These are the configs created : "
-                       | -inputPath -> $inputPath
-                       | -outputPath -> $outputPath
-                       | -validationPath -> $validationPath
-                       | -reportPath -> $reportPath
-                       | -dataMetaPath -> $dataMetaPath
-                       | -applicationName -> $applicationName
-                       | -joinDataPath -> $joinDataPath
-                       | -partition -> $partition
-                       | -hiveTable -> $hiveTable
-                       | -jobId -> $jobId
-                  """.stripMargin
+    These are the configs created :
+                   | -inputPath -> $inputPath
+                   | -outputPath -> $outputPath
+                   | -validationPath -> $validationPath
+                   | -reportPath -> $reportPath
+                   | -dataMetaPath -> $dataMetaPath
+                   | -applicationName -> $applicationName
+                   | -joinDataPath -> $joinDataPath
+                   | -partition -> $partition
+                   | -hiveTable -> $hiveTable
+                   | -jobId -> $jobId
+              """.stripMargin
     logger.info(s)
     s
+  }
+}
+sealed trait ConfigValidator
+
+class ConfigurationValidator(validationResult: List[Either[String,Boolean]]) extends ConfigValidator {
+  def copy(validationResult: List[Either[String,Boolean]] = this.validationResult) :ConfigurationValidator= {
+    new ConfigurationValidator(validationResult)
   }
 }

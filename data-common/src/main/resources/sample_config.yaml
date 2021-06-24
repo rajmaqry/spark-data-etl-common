@@ -1,0 +1,165 @@
+#-------- DataSource  Metadata ------
+
+data_source: #required
+  name: "sample_ds" #required
+  type: "content" #required
+  buid_prefix: "SD"
+
+  content_centric_columns: # required for content-centric data source
+    - names
+    - addresses
+    - phones
+    - emails
+    - dobs
+
+  id_centric_column: # required id-centric data source
+    lookup_type: "column_name"
+    lookup_ref: "pin"
+description: "Test data parser"
+snapshot_date_required: True #required
+timestamp_type: "purchase_date" #required
+#-------- DataSource  Metadata ------
+
+
+
+#-------- Required py files to load into spark context ------
+#
+additional_files:
+  - lh_name_consolidation.py
+  - truvue_parser.py
+#-------- Required py files to load into spark context ------
+
+
+
+#-------- Frequency Keys to broadcast -----
+frequency: #required
+  keys:
+    - first_name
+    - middle_name
+    - last_name
+    - address
+    - ssn
+    - phone
+    - email
+#-------- Frequency Keys to broadcast --------
+
+
+
+#-------- Raw Data Info --------
+raw_file_info:
+  - id: "test" #required
+    data_set: "optional" #sub-directory to input path where actual raw files exist
+    file_type: "CSV" #required
+    delimiter: "|"
+    header_present: False #required
+    quote: ''
+    schema:
+      - list_of_column_names
+    # To rename column names
+    column_rename:
+      old_column_name_1: 'new_column_name_1'
+      old_column_name_2: 'new_column_name_2'
+#-------- Raw Data Info --------
+
+
+
+#-------- Pre-Processing --------
+# Optional configuration if you want to do any processing on raw data frames. All raw dataframes are available
+# and passed as argument to pre-processing function
+pre_process_data_frames:
+  pre_process_type: 'custom' #Options: custom, one_to_many
+  custom: 'my_custom_file.ExtensionClass' #required if custom type
+  one_to_many: #required if one_to_many type
+    global_field_mapping:
+      - name_1:
+          lookup_type: 'column_name'
+          lookup_ref: "reference in source"
+      - name_1:
+          lookup_type: 'column_name'
+          lookup_ref: "reference in source"
+
+    row_flattening:
+      - lookup_type: 'column_json'
+        lookup_ref: "reference in source"
+        row_column_mapping:
+          fname:
+            lookup_type: 'column_json'
+            lookup_ref: "customer.name.first_name"
+          type:
+            lookup_type: 'static'
+            lookup_ref: "customer"
+
+#-------- Pre-Processing --------
+
+
+
+#-------- Transform and Standardize --------
+transformations:
+  - id: "test" #required
+    content_record_mappings: #required
+      - column_name: 'column_name_to_create_in_target_content_record'  #required # Options 'names', 'spouse_names', 'other_ids', 'addresses', 'ssns', 'dobs', 'phones', 'emails', 'genders', 'timestamps', 'other_attributes', 'ips', 'device_prints'
+        content_element_collection: # reference to source holding list of same type elements #TODO: Rename and make it as object
+          lookup_type: "column_name"
+          lookup_ref: "names_list"
+        augmentation: "my_custom_file.AugmentatorExtensionClass" #Optional custom logic to apply on standardized element to augment with more data before deduping"
+
+        mappings: #required
+          - mapping_type: 'config'
+            config: #required if mapping type is config
+              pre_defined_name_0: # pre-defined names for column type. refer to end of file for possible options for each column
+                lookup_type: 'static'
+                lookup_ref: "static_value_to_set"
+              pre_defined_name_1:
+                lookup_type: 'column_name'
+                lookup_ref: "name_of_column_to_read_data_from"
+              pre_defined_name_2:
+                lookup_type: 'column_index'
+                lookup_ref: "index_of_column_to_read_data_from"
+              pre_defined_name_3:
+                lookup_type: 'column_json'
+                lookup_ref: "dot-separated-names_to_read_data_from"
+              pre_defined_name_4:
+                lookup_type: 'custom'
+                lookup_ref: "my_custom_file.CustomElementPartValueRetrieverExtensionClass"
+          - mapping_type: 'custom'
+            custom: "my_custom_file.ElementStandardizationExtensionClass" #required if mapping type is custom
+#-------- Transform and Standardize --------
+
+
+
+#-------- Post-Process --------
+post_process_data_frames:
+  post_process_type: 'custom' #options: custom, reduce_by_key
+  custom: "" # required if post_process_type is custom
+  reduce_by_key: # required if post_process_type is custom
+    deduping_columns: #TODO Rename this to be more meaningful
+      - other_ids
+      - names
+      - addresses
+
+
+      #-----------------Supported column_parts_for standard columns -----------
+      #--------------------------------------------------
+      #   column_name          |   supported part names
+      #--------------------------------------------------
+      #    'names'             |    full_name(columns representing full name), generation_code, middle_name, second_last_name,
+      #                             last_name, first_name,  to_database_date, last_update_date, ssn, soft_del_cd, updt_db_id,
+      #                             best_ind, trade_count, best_ssn_ind, con_ident_nb
+      #    'addresses'         |    address(columns representing full address) or state, zip, house_number, house_suffix_number,
+      #                             address_id,address_type, country, city_name, unit_id, unit_type, street_post_directional
+      #                             street_suffix, street_name, street_pre_directional, dwelling_type, to_database_date, last_update_date
+      #                             soft_del_cd
+      #    'spouse_names'      |    first_name, to_database_date, last_update_date
+      #    'other_ids'         |    id, id_type, to_database_date, last_update_date
+      #    'ssns'              |    ssn, soft_del_cd, updt_db_id, best_ind, trade_count, last_update_date, to_database_date
+      #    'dobs'              |    day, month, year, dob (full date, format required),format,last_update_date, to_database_date
+      #    'phones'            |    phone_rank, phone_type, last7digits, area_code,last_update_date, to_database_date, soft_del_cd, updt_db_id
+      #    'emails'            |    emails, last_update_date, to_database_date
+      #    'genders'           |    gender, last_update_date, to_database_date
+      #    'timestamps'        |    date
+      #    'other_attributes'  |    any name works
+      #    'ips'               |    ip, last_update_date, to_database_date
+      #    'device_prints'     |    device_print, to_database_date, last_update_date
+      #
+      #--------------------------------------------------
+
