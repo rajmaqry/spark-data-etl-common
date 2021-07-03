@@ -1,5 +1,7 @@
 package common.data.spark.args
 
+import java.util
+
 import common.data.spark.constant.DataConstant._
 package object beans {
 
@@ -23,7 +25,7 @@ package object beans {
     ConfigBuilder(ConfigConstants.RAW_FILE_INFO)
     .doc("use this list of configuration to pass different input files to the pipeline job")
     .withChildren(ConfigBuilder(ConfigConstants.ID)
-                  .doc("Individual file ID to be used for reference, need to be unique").withDefault("/")
+                  .doc("Individual file ID to be used for reference, need to be unique").withDefault("1")
                   .setRequired(true).stringConfig.createWithDefaultString)
     .withChildren(ConfigBuilder(ConfigConstants.DATA_SET)
                   .doc("Prefix paths under the passed input path in argument")
@@ -50,5 +52,5 @@ package object beans {
                   .setRequired(false)
                   .withDefault(false).stringConfig.createWithDefaultBoolean)
     .setRequired(true)
-    .withValueType(classOf[List[_]]).stringConfig.createWithDefaultString
+    .withValueType(classOf[java.util.ArrayList[_]]).stringConfig.createWithDefaultString
 }

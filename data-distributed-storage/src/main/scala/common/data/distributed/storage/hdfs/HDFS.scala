@@ -14,6 +14,14 @@ class HDFS extends BaseFileSystem{
   override def readContent(configPath: String): String = ""
 
   override def ifExists(u: URL): Boolean = true
+
+  override def isDirectory(u: URL): Boolean = true
+
+  override def numOfFiles(u: URL): Int = 1
+
+  override def getExtension(u: URL): String = "csv"
+
+  override def getExtensions(u: URL): String = ""
 }
 object HDFS {
   def apply(path: String) : HDFS ={

@@ -9,6 +9,9 @@ case object DataPipeline{
 
  //config constants
 }
+ case object BaseConstants{
+   val FOR_SLASH = "/"
+ }
  case object ConfigConstants{
   val APPLICATION_NAME = "application_name"
   val DESCRIPTION = "description"
@@ -23,5 +26,7 @@ case object DataPipeline{
   val MANIFEST = "manifest"
   val ID_COLUMN = "id_column"
   val VALIDATION = "validation"
+
+  val SUPPORTED_FILES = Array("parquet","json","csv","txt")
  }
 }

@@ -13,6 +13,8 @@
         <module>data-beans</module>
         <module>data-engine</module>
         <module>data-distributed-storage</module>
+        <module>data-reader</module>
+        <module>data-validation</module>
     </modules>
     <properties>
         <global.current.version>1.0.0</global.current.version>
@@ -54,6 +56,11 @@
             </dependency>
             <dependency>
                 <groupId>org.self.data.spark.common</groupId>
+                <artifactId>data-reader</artifactId>
+                <version>${global.current.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.self.data.spark.common</groupId>
                 <artifactId>data-common</artifactId>
                 <version>${global.current.version}</version>
             </dependency>
@@ -63,22 +70,27 @@
                 <version>${global.current.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.self.data.spark.common</groupId>
+                <artifactId>data-validation</artifactId>
+                <version>${global.current.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_${scala.major.version}</artifactId>
                 <version>${spark.version}</version>
-                <scope>provided</scope>
+                <!--<scope>provided</scope>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.major.version}</artifactId>
                 <version>${spark.version}</version>
-                <scope>provided</scope>
+                <!--<scope>provided</scope>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-hive_${scala.major.version}</artifactId>
                 <version>${spark.version}</version>
-                <scope>provided</scope>
+                <!--<scope>provided</scope>-->
             </dependency>
             <dependency>
                 <groupId>com.databricks</groupId>

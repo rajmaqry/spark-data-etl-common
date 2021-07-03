@@ -1,18 +1,19 @@
 package common.data.spark.args.beans
 
+
+
 import common.data.distributed.storage.FileSystemUtility
-import common.data.spark.args.beans.ExecutionConfig.logger
+
 import common.data.spark.beans.exceptions.DataProcessException
 import common.data.spark.beans.logger.Logging
-import common.data.spark.constant.DataConstant.DataPipeline
-import common.data.spark.util.{DataSubmitArgumentParser, SparkSessionFactory}
-
+import common.data.spark.constant.DataConstant.{ConfigConstants, DataPipeline}
+import common.data.spark.util.{ConfigurationValidator, DataSubmitArgumentParser, SparkSessionFactory}
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 
-import scala.collection.mutable
+
 import scala.collection.mutable.Seq
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 
 
 /**
@@ -45,18 +46,7 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
   validateConfigurations()
   def throwError(msg: String): Unit = throw new DataProcessException(msg)
 
-  private def validateRawFileInfo(): Either[String,Boolean] = {
-    var msg = ""
-    if(executionConfig.contains(RAW_FILE_INFO.key)){
-        val value = executionConfig.get(RAW_FILE_INFO.key)
-        value match{
-          case RAW_FILE_INFO.valueType => logger.info("valid child type for this configuration")
-          case _ => msg = s"=> ${value.getClass} Improper deceleration under ${RAW_FILE_INFO.key} in YAML file : $dataMetaPath \n"
-        }
-
-    }
-    Left(msg)
-  }
+  def _validateRawFileKeys(value: Any): Any = ???
 
   /**
    * This method validates the YAML configuration files.
@@ -67,7 +57,7 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
   def validateConfigurations(): Unit ={
     var result = List.empty[Either[String,Boolean]]
     //validate raw file info
-    result :+ validateRawFileInfo()
+    result = result :+ ConfigurationValidator.validateRawFileInfo(this.executionConfig)
     if(result.forall(_.isRight)){
       logger.info(s"Validation successful for the configuration data present in :$dataMetaPath")
     }else{
@@ -145,12 +135,5 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
               """.stripMargin
     logger.info(s)
     s
-  }
-}
-sealed trait ConfigValidator
-
-class ConfigurationValidator(validationResult: List[Either[String,Boolean]]) extends ConfigValidator {
-  def copy(validationResult: List[Either[String,Boolean]] = this.validationResult) :ConfigurationValidator= {
-    new ConfigurationValidator(validationResult)
   }
 }

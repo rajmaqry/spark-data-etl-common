@@ -14,9 +14,9 @@ class TypeConfiguration[T](
   val parent: ConfigBuilder ){
   import ConfigHelper._
 
-  def this(parent: ConfigBuilder) = {
+ /* def this(parent: ConfigBuilder) = {
     this(parent)
-  }
+  }*/
 
   def createWithDefaultString: ConfigEntry[T] ={
     val entry = new ConfigEntryWithStringDefault[T](
@@ -54,7 +54,7 @@ case class ConfigBuilder(key: String){
   private[spark] var _childConfig: List[ConfigEntry[_]] = List.empty[ConfigEntry[_]]
   private[spark] var _valueType: Class[_] = classOf[String]
   private[spark] var _required: Boolean = false
-  private[spark] var _default: Any = null
+  private[spark] var _default: Any = ""
 
 
   def doc(s: String): ConfigBuilder = {
@@ -95,9 +95,11 @@ case class ConfigBuilder(key: String){
   }
 
   def stringConfig: TypeConfiguration[String]= {
-      new TypeConfiguration(parent = this)
+    if (this._default == null) this._default = ""
+    new TypeConfiguration(parent = this)
   }
   def booleanConfig: TypeConfiguration[Boolean] = {
-      new TypeConfiguration(parent = this)
+    this._valueType = classOf[Boolean]
+    new TypeConfiguration(parent = this)
   }
 }

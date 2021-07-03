@@ -37,7 +37,7 @@ object SparkSessionFactory extends Logging{
       logger.info(s"Creating local spark session with hive enabled for app name :$appName")
          SparkSession
         .builder()
-        .master("local[*}")
+        .master("local[3]")
         .appName(appName)
         .enableHiveSupport()
         .getOrCreate()
@@ -45,7 +45,7 @@ object SparkSessionFactory extends Logging{
       logger.info(s"Creating local spark session with out hive enabled for app name :$appName")
          SparkSession
         .builder()
-        .master("local[*}")
+        .master("local[3]")
         .appName(appName)
         .getOrCreate()
     }
@@ -64,7 +64,7 @@ object SparkSessionFactory extends Logging{
     "" match {
       case DataPipeline.DEV => createOrGetSparkSession(appName)
       case DataPipeline.LOCAL => createOrGetLocalSparkSession(appName, enableHiveSupport)
-      case _ => createOrGetSparkSession(appName)
+      case _ => createOrGetLocalSparkSession(appName,enableHiveSupport)
     }
   }
 

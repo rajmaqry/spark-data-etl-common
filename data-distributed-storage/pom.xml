@@ -15,10 +15,10 @@
             <groupId>org.self.data.spark.common</groupId>
             <artifactId>data-beans</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.self.data.spark.common</groupId>
             <artifactId>data-common</artifactId>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
 </project>

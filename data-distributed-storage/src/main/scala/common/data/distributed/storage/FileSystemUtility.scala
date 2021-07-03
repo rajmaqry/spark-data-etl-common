@@ -7,8 +7,45 @@ import common.data.spark.beans.exceptions.DataProcessException
 
 object FileSystemUtility {
   /**
+   * Utility method to get or collect the file extension
+   * @param path :[[String]] : Path to the directory or files
+   * @return
+   */
+  def getFileExtension(path: String): String = {
+    var ext = ""
+    val u = new URL(path)
+    val scheme = u.getProtocol
+    val fs = FileSystemFactory.getFs(scheme)
+    if(fs.isDirectory(u)){
+        ext = fs.getExtensions(u)
+    }else{
+      ext = fs.getExtension(u)
+    }
+    ext
+  }
+
+  /**
+   * Utility method that will identify if directory/files are present in the path provided
+   * @param path : [[String]] : Path to the directory or files.
+   * @return
+   */
+  def checkIfFileExist(path: String): Boolean  = {
+    var res = false;
+    val u = new URL(path)
+    val scheme = u.getProtocol
+    val fs = FileSystemFactory.getFs(scheme)
+    if(fs.isDirectory(u)){
+      if(fs.numOfFiles(u) > 0) { res = true}
+    }else{
+      res = fs.ifExists(u)
+    }
+    res
+  }
+
+  /**
    * Utility method will use the underlying FileSystems to read and return
    * file content. Useful for reading configuration/manifest files.
+   *
    * @param path
    * @return
    */
@@ -22,5 +59,11 @@ object FileSystemUtility {
       case false => throw new DataProcessException(s"Invalid configuration file path in $path")
     }
     content
+  }
+
+  def getSchema(path: String): String = {
+    val u = new URL(path)
+    val scheme = u.getProtocol
+    scheme
   }
 }

@@ -17,6 +17,10 @@ object ExecutionConfig extends Logging{
 }
 
 class ExecutionConfig extends Logging {
+  def getas(key: String, value: Nothing) = ???
+
+  def getas(key: String) = ???
+
   def set(key: String, value: Any): ExecutionConfig = {
     set(key, value,false)
   }
@@ -40,12 +44,12 @@ class ExecutionConfig extends Logging {
   }
   /** public method to get the key from configuration */
   def get(key:String): Any ={
-    getOption(key)
+    getOption(key).get
   }
 
   /** public method to check if key is there */
   def contains(key: String):Boolean ={
-    settings.contains(key)
+    settings.containsKey(key)
   }
   private var settings = new ConcurrentHashMap[String, Any]()
 

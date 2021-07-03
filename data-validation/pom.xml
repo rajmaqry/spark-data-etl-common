@@ -8,9 +8,8 @@
         <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>data-engine</artifactId>
 
-
+    <artifactId>data-validation</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.self.data.spark.common</groupId>
@@ -21,26 +20,25 @@
             <artifactId>data-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.self.data.spark.common</groupId>
-            <artifactId>data-reader</artifactId>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
         </dependency>
         <dependency>
             <groupId>org.self.data.spark.common</groupId>
-            <artifactId>data-validation</artifactId>
+            <artifactId>data-distributed-storage</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api-scala_2.11</artifactId>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.major.version}</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.major.version}</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.major.version}</artifactId>
         </dependency>
     </dependencies>
-
 
 </project>
