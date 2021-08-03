@@ -17,6 +17,7 @@ trait BaseFileSystem {
   def numOfFiles(u: URL): Int
   def getExtension(u: URL): String
   def getExtensions(u: URL): String
+  def saveContent(path:String, content:String, fileName:String): Unit
 
   val NOT_FOUND = -1
   val UNIX_SEPARATOR = "/"
@@ -24,6 +25,11 @@ trait BaseFileSystem {
   val S3_SEPARATOR = "/"
   val EXTENSION_SEPARATOR = "."
   val EMPTY_STRING = ""
+  def getSeparator(): String ={
+    val os = System.getProperty("os.name")
+    if(os.startsWith("Windows")) WINDOWS_SEPARATOR
+    else UNIX_SEPARATOR
+  }
   /**
    *  Abstract method to define read content of a file.
    *  extended subclass will use this implement own api logic.

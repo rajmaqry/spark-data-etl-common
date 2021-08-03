@@ -1,5 +1,7 @@
 package common.data.spark.reader.api
 
+import common.data.spark.api.BaseExecutionApi
+
 import common.data.spark.reader.GenericDataReader
 import common.data.spark.context.ProcessContext
 
@@ -7,9 +9,9 @@ import common.data.spark.context.ProcessContext
  *  The abstract API around the Spark data read operations.
  *  The different Data Reader class can extend this and override it's own way of reading files
  */
-trait DataReaderApi {
+trait DataReaderApi extends BaseExecutionApi{
 
-  def execute(context: ProcessContext): ProcessContext = readData(context)
+   override def execute(context: ProcessContext): ProcessContext = readData(context)
   /**
    *  Abstract readData method to use Spark reading functions
    * @param context : [[ParamContex]] class instance which will hold the contextual data around the process

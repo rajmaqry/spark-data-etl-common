@@ -1,7 +1,8 @@
 package common.data.distributed.storage.file
 
 import java.net.URL
-import java.nio.file.{Files, Paths}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths, StandardOpenOption}
 
 import common.data.distributed.storage.BaseFileSystem
 
@@ -55,6 +56,14 @@ class FileBase extends BaseFileSystem{
     val ver1 = extMap.filter(_._2 == extMap.values.max)
     if( ver1.size == 1) ext = ver1.head._1
     ext
+  }
+
+  override def saveContent(path: String, content: String, fileName: String): Unit = {
+    if(Files.exists(Paths.get(path))){
+      Files.write(Paths.get(path+getSeparator()+fileName), content.getBytes(StandardCharsets.UTF_8),StandardOpenOption.APPEND)
+    }else{
+      Files.write(Paths.get(path+getSeparator()+fileName), content.getBytes(StandardCharsets.UTF_8))
+    }
   }
 }
 

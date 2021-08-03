@@ -22,6 +22,8 @@ class S3FileSystem extends BaseFileSystem{
   override def getExtension(u: URL): String = "csv"
 
   override def getExtensions(u: URL): String = ""
+
+  override def saveContent(path: String, content: String, fileName: String): Unit = ???
 }
 
 object S3FileSystem{

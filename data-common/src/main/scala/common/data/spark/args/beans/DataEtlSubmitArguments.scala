@@ -58,6 +58,8 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
     var result = List.empty[Either[String,Boolean]]
     //validate raw file info
     result = result :+ ConfigurationValidator.validateRawFileInfo(this.executionConfig)
+    //validate validation details in YAML
+    result = result :+ ConfigurationValidator.validateValidationDetails(this.executionConfig)
     if(result.forall(_.isRight)){
       logger.info(s"Validation successful for the configuration data present in :$dataMetaPath")
     }else{

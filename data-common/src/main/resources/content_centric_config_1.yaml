@@ -78,9 +78,11 @@ validation:
     column_count: True
     manifest:
       type: 'file'
-      path: './abc/acac/manifest.csv'
+      path: '/abc/acac/manifest.csv'
       format: 'csv'
-      delimeter: ","
+      delimiter: ","
+      record_count_col: "_c5"
+      column_count_col: "_c6"
 
   - id: "rf_csv_del_03_sml"
     file_exist: True

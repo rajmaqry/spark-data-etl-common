@@ -7,7 +7,21 @@ import common.data.spark.beans.exceptions.DataProcessException
 
 object FileSystemUtility {
   /**
+   * Utility method to write small content to files.
+   * @param path
+   * @param content
+   * @param fileName
+   */
+  def writeContent(path: String, content: String, fileName: String): Unit = {
+    val u = new URL(path)
+    val scheme = u.getProtocol
+    val fs = FileSystemFactory.getFs(scheme)
+    fs.saveContent(path,content,fileName)
+  }
+
+  /**
    * Utility method to get or collect the file extension
+   *
    * @param path :[[String]] : Path to the directory or files
    * @return
    */

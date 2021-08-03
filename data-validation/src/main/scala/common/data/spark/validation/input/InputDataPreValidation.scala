@@ -1,6 +1,7 @@
 package common.data.spark.validation.input
 
 import common.data.distributed.storage.FileSystemUtility
+import common.data.spark.api.TaskMixin
 import common.data.spark.args.beans.RAW_FILE_INFO
 import common.data.spark.beans.logger.Logging
 import common.data.spark.constant.DataConstant.{BaseConstants, ConfigConstants}
@@ -82,4 +83,6 @@ class InputDataPreValidation(context: ProcessContext) extends InputPreValidatorA
    * @return
    */
   override def validateManifestExist(context: ProcessContext): ProcessContext = context
+
+  override def _setDownStream(a: TaskMixin): Unit = ???
 }

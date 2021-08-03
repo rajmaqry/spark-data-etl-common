@@ -1,10 +1,12 @@
 package common.data.spark.validation.input.api
 
+import common.data.spark.api.BaseExecutionApi
+
 import common.data.spark.context.ProcessContext
 import common.data.spark.validation.input.InputDataPreValidation
 
-trait InputPreValidatorApi {
-  def execute(context: ProcessContext): ProcessContext ={
+trait InputPreValidatorApi extends BaseExecutionApi{
+  override def execute(context: ProcessContext): ProcessContext ={
     validateFileExist(context)
     validateFileExtension(context)
     validateIdColumn(context)
@@ -39,7 +41,7 @@ trait InputPreValidatorApi {
 }
 
 object InputPreValidatorApi {
-  def apply(context:ProcessContext, validationType: String = ""): Unit ={
+  def apply(context:ProcessContext, validationType: String = ""): InputPreValidatorApi ={
     validationType match {
       case _ => new InputDataPreValidation(context)
     }
