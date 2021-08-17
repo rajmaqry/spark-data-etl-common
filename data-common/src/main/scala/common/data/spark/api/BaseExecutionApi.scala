@@ -1,7 +1,6 @@
 package common.data.spark.api
 
 import common.data.spark.context.ProcessContext
-import scala.collection.mutable.Seq
 trait BaseExecutionApi extends  TaskMixin {
     /**
      * Base abstract method for API execution. Sub classes will expand this to it's own definition of
@@ -21,7 +20,8 @@ trait BaseExecutionApi extends  TaskMixin {
         relatives = relatives :+ a.asInstanceOf[BaseExecutionApi]
     }
 
-    override def >>(a: TaskMixin): Unit = {
+    override def >>(a: TaskMixin): BaseExecutionApi = {
         _updateRelatives(a)
+        this
     }
 }

@@ -1,0 +1,6 @@
+dbConnections:
+  - id: "rf_csv_del_04_sml"
+    hostPortSchema: 192.0.0.1:50000/local
+    driverName : com.mysql.jdbc.Driver
+    userName: localuser
+    password: "{Ss}EAAQBttTVbzXf80636mHEEAHMw=="

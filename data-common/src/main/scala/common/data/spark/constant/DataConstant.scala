@@ -38,6 +38,20 @@ case object DataPipeline{
   val MANIFEST_REC_COUNT_COL = "record_count_col"
   val MANIFEST_COL_COUNT_COL = "column_count_col"
 
+  val DB_CON_ID = "dbconfig";
+  val DB_MAPPER = "mapper";
+  val SPLIT_COLUMN = "split_by";
+  val SCHEMA_PATH = "schema_file";
+  val TABLE_SCHEMA = "schema"
+  val TABLE_DATA_START = "dataStart"
+  val TABLE_DATA_END = "dataEnd"
+  val TABLE_BOUNDARY_COL = "boundaryCol"
+  val DB_CON_INFO = "dbConnections";
+  val HOST_PORT_SCHEMA = "hostPortSchema";
+  val DRIVER_NAME = "driverName";
+  val DB_USER_NAME = "userName";
+  val DB_PASSWORD = "password";
+
   val SUPPORTED_FILES = Array("parquet","json","csv","txt")
   val SUPPORTED_MANIFEST_FILES = Array("csv","txt")
  }

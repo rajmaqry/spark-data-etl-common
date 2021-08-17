@@ -37,6 +37,18 @@ raw_file_info:
     id_column: "sbin"
     validation: True
 
+  - id: "rf_csv_del_04_sml"
+    data_set: ""
+    file_type: "jdbc"
+    dbconfig: "rf_csv_del_04_sml"
+    mapper: 20
+    split_by: "id_ns"
+    schema: "test"
+    dataStart: 100
+    dataEnd: 10000
+    boundaryCol: "id_ns"
+    schema_file: "schemas/rf_csv_del_03_sml.json"
+
 pre_process_data_frames:
   - id: "rf_csv_del_01_sml"
     column_rename:
@@ -126,7 +138,7 @@ transformations:
       join_query:
         type: 'condition'
         valye: 'first_nm = sys_ot_ol AND middle_nm = idio_his_pen AND surname = riv_hin_sppn'
-      join_type: 'left_outer'
+      join_type: 'inner'
       output:
         table: '01_03_joined'
         path: 'outputpath'

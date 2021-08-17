@@ -29,6 +29,7 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
   var validationPath :String = null
   var reportPath :String = null
   var dataMetaPath :String = null
+  var dbConnPath :String = null
   var applicationName :String = null
   var joinDataPath :String = null
   var partition :Int = 0
@@ -41,6 +42,9 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
 
   //create execution configurations for context
   toExecutionConfig()
+
+  //update DB connection configurations
+  updateDBConns()
 
   //validate YAML keys
   validateConfigurations()
@@ -79,13 +83,24 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
     logger.info(s"Trying to load configuration content from YAML file in path : $dataMetaPath")
     val content = FileSystemUtility.getFileContent(dataMetaPath)
     val yaml = new Yaml(new Constructor())
-    var config = executionConfig.getOrElse(new ExecutionConfig)
+    val config = executionConfig.getOrElse(new ExecutionConfig)
     this.executionConfig = yaml.load(content).asInstanceOf[java.util.LinkedHashMap[String, Any]].asScala.foldLeft(config){
       case (config,(k,v) ) => config.set(k,v)
     }
     this.executionConfig
   }
-
+  def updateDBConns() = {
+    if (null != this.executionConfig && null != dbConnPath){
+      logger.info(s"Trying to load Database connection configuration content from YAML file in path : $dbConnPath")
+      val content = FileSystemUtility.getFileContent(dbConnPath)
+      val yaml = new Yaml(new Constructor())
+      this.executionConfig = yaml.load(content).asInstanceOf[java.util.LinkedHashMap[String, Any]].asScala.foldLeft(executionConfig){
+        case (executionConfig,(k,v) ) => executionConfig.set(k,v)
+      }
+    }else{
+      logger.info("No DB connection details shared to this APP")
+    }
+  }
   override protected def handle(opt: String, value: String): Boolean = {
     try{
     opt match {
@@ -100,6 +115,8 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
       case META_CON_PATH =>
         dataMetaPath = value
         //metaConfig = toMetaConfig(dataMetaPath)
+      case DB_CON_PATH =>
+        dbConnPath = value
       case APP_NAME =>
         applicationName = value
       case JOIN_DATA_PAth =>

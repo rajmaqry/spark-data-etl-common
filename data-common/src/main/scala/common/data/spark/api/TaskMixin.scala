@@ -4,6 +4,6 @@ trait  TaskMixin {
 
     def root(): Any
     def leaves(): Any
-    def _setDownStream(a: TaskMixin) : Unit = { throw new Exception("jok")}
-    def >>(a: TaskMixin) : Unit = { _setDownStream(a)}
+    def _setDownStream(a: TaskMixin) : AnyRef = { throw new Exception("jok")}
+    def >>(a: TaskMixin) : AnyRef = { _setDownStream(a)}
 }

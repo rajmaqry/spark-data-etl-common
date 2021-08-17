@@ -6,7 +6,7 @@ import common.data.spark.constant.DataConstant.ConfigConstants
 import common.data.spark.context.ProcessContext
 import common.data.spark.reader.api.DataReaderApi
 import common.data.spark.util.ConfigUtil
-import common.data.spark.validation.input.api.InputPreValidatorApi
+import common.data.spark.validation.input.api.{InputDataValidationApi, InputPreValidatorApi}
 
 
 class DriverStateMachine(context:ProcessContext) extends Logging{
@@ -14,11 +14,13 @@ class DriverStateMachine(context:ProcessContext) extends Logging{
   val preValidator:InputPreValidatorApi = InputPreValidatorApi(context,"")
   // raw file reader API based on the type.
   val dataReader:DataReaderApi = DataReaderApi(context,"")
+  // data validation API based on type.
+  val dataValidator: InputDataValidationApi = InputDataValidationApi(context,"")
 
-  preValidator >> dataReader
+  preValidator >> dataReader >> dataValidator
   def execute():Unit = {
 
-    var df = context.sc.read.option("delimiter","#").csv("C:\\elements\\test.txt")
+    /*var df = context.sc.read.option("delimiter","#").csv("C:\\elements\\test.txt")
     //var df = context.sc.read.json("C:\\\\elements\\\\self\\\\aspiring\\\\gtu\\\\project\\\\spark\\\\spark\\\\examples\\\\src\\\\main\\\\resources\\\\people.json")
     val m = df.columns
     //df.rdd.map(x => (x,"1")).reduceByKey((x,y)=> x+y).saveAsTextFile("C:\\elements\\testnow\\test1.txt")
@@ -32,8 +34,8 @@ class DriverStateMachine(context:ProcessContext) extends Logging{
       }
       (a,o)
     }).reduceByKey((x,y) => x+y)
-    l.saveAsTextFile("C:\\elements\\testnow\\test3")
-   // context.startAt(preValidator)
-    //context.run()
+    l.saveAsTextFile("C:\\elements\\testnow\\test3")*/
+    context.startAt(preValidator)
+    context.run()
   }
 }

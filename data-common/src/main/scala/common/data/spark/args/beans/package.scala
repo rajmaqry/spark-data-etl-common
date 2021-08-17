@@ -53,6 +53,28 @@ package object beans {
                   .withDefault(false).booleanConfig.createWithDefaultBoolean)
     .setRequired(true)
     .withValueType(classOf[java.util.ArrayList[_]]).stringConfig.createWithDefaultString
+     val DB_CON_INFO =
+            ConfigBuilder(ConfigConstants.DB_CON_INFO)
+            .doc("use this list of configuration to pass different database connection definitions")
+                 .withChildren(ConfigBuilder(ConfigConstants.ID)
+                   .doc("Individual file ID to be used for reference, need to be unique").withDefault("1")
+                   .setRequired(true).stringConfig.createWithDefaultString)
+                 .withChildren(ConfigBuilder(ConfigConstants.HOST_PORT_SCHEMA).withDefault("localhost:50000/data")
+                   .doc("Host and port config for the DB with schema host:port/schema")
+                   .setRequired(true).stringConfig.createWithDefaultString)
+                 .withChildren(ConfigBuilder(ConfigConstants.DRIVER_NAME)
+                   .doc("JDBC Driver class path").withDefault("com.mysql.jdbc.Driver")
+                   .setRequired(true).stringConfig.createWithDefaultString)
+                 .withChildren(ConfigBuilder(ConfigConstants.DB_USER_NAME)
+                   .doc("DB Connection user name")
+                   .setRequired(true).withDefault("root")
+                   .stringConfig.createWithDefaultString)
+                  .withChildren(ConfigBuilder(ConfigConstants.DB_PASSWORD)
+                     .doc("DB Connection password")
+                     .setRequired(true).withDefault("root")
+                     .stringConfig.createWithDefaultString)
+   .setRequired(true)
+   .withValueType(classOf[java.util.ArrayList[_]]).stringConfig.createWithDefaultString
     val VALIDATION =
      ConfigBuilder(ConfigConstants.VALIDATION)
        .doc("use this list of configuration to pass different validations to be done on input")
