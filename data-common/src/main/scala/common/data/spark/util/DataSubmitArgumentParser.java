@@ -10,6 +10,7 @@ public class DataSubmitArgumentParser {
     protected final String VALIDATION_PATH = "-validationpath";
     protected final String REPORT_PATH = "-report";
     protected final String META_CON_PATH = "-metaconf";
+    protected final String DB_CON_PATH = "-dbconpath";
     protected final String APP_NAME = "-appname";
     protected final String JOIN_DATA_PAth = "-joinwith";
     protected final String PARTITION = "-partitions";
@@ -32,6 +33,7 @@ public class DataSubmitArgumentParser {
             {VALIDATION_PATH, "-v"},
             {REPORT_PATH, "-r"},
             {META_CON_PATH, "-c"},
+            {DB_CON_PATH, "-d"},
             {APP_NAME, "-a"},
             {JOIN_DATA_PAth, "-j"},
             {PARTITION, "-p"},
@@ -68,7 +70,14 @@ public class DataSubmitArgumentParser {
             //Looking for options array with value
             String name = findInArguments(arg,options);
             if(name != null){
-
+                if (value == null) {
+                    if (ind == args.size() - 1) {
+                        throw new IllegalArgumentException(
+                                String.format("Missing argument for option '%s'.", arg));
+                    }
+                    ind++;
+                    value = args.get(ind);
+                }
                 if(!handle(name,value)){
                     break;
                 }

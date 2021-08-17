@@ -12,6 +12,9 @@
         <module>data-common</module>
         <module>data-beans</module>
         <module>data-engine</module>
+        <module>data-distributed-storage</module>
+        <module>data-reader</module>
+        <module>data-validation</module>
     </modules>
     <properties>
         <global.current.version>1.0.0</global.current.version>
@@ -42,6 +45,8 @@
         <commons.collections.version>4.4</commons.collections.version>
         <commons.lang3.version>3.10</commons.lang3.version>
         <commons.io.version>2.4</commons.io.version>
+        <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
+        <fasterxml.jackson.version>2.12.3</fasterxml.jackson.version>
 
     </properties>
     <dependencyManagement>
@@ -53,26 +58,41 @@
             </dependency>
             <dependency>
                 <groupId>org.self.data.spark.common</groupId>
+                <artifactId>data-reader</artifactId>
+                <version>${global.current.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.self.data.spark.common</groupId>
                 <artifactId>data-common</artifactId>
+                <version>${global.current.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.self.data.spark.common</groupId>
+                <artifactId>data-distributed-storage</artifactId>
+                <version>${global.current.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.self.data.spark.common</groupId>
+                <artifactId>data-validation</artifactId>
                 <version>${global.current.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_${scala.major.version}</artifactId>
                 <version>${spark.version}</version>
-                <scope>provided</scope>
+                <!--<scope>provided</scope>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-core_${scala.major.version}</artifactId>
                 <version>${spark.version}</version>
-                <scope>provided</scope>
+                <!--<scope>provided</scope>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-hive_${scala.major.version}</artifactId>
                 <version>${spark.version}</version>
-                <scope>provided</scope>
+                <!--<scope>provided</scope>-->
             </dependency>
             <dependency>
                 <groupId>com.databricks</groupId>
@@ -112,12 +132,32 @@
                 <version>20090211</version>
             </dependency>
 
-            <dependency>
+          <!--  <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson-databind.version}</version>
-                <scope>provided</scope>
+                <version>${fasterxml.jackson.version}</version>
+
             </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${codehaus.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${codehaus.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-xc</artifactId>
+                <version>${codehaus.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-jaxrs</artifactId>
+                <version>${codehaus.jackson.version}</version>
+            </dependency>-->
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>

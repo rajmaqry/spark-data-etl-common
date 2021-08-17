@@ -1,12 +1,19 @@
 package common.data.spark.args.beans
 
+
+
+import common.data.distributed.storage.FileSystemUtility
+
 import common.data.spark.beans.exceptions.DataProcessException
-import common.data.spark.constant.DataConstant.DataPipeline
-import common.data.spark.util.DataSubmitArgumentParser
-import org.apache.logging.log4j.scala.Logging
+import common.data.spark.beans.logger.Logging
+import common.data.spark.constant.DataConstant.{ConfigConstants, DataPipeline}
+import common.data.spark.util.{ConfigurationValidator, DataSubmitArgumentParser, SparkSessionFactory}
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
+
 
 import scala.collection.mutable.Seq
-import scala.jdk.CollectionConverters._
+import scala.collection.JavaConverters._
 
 
 /**
@@ -22,24 +29,80 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
   var validationPath :String = null
   var reportPath :String = null
   var dataMetaPath :String = null
+  var dbConnPath :String = null
   var applicationName :String = null
   var joinDataPath :String = null
   var partition :Int = 0
   var hiveTable :String = null
   var jobId :String = null
-  var metaConfig :MetaConfig = null
+  var executionConfig :ExecutionConfig = null
 
   //parse command arguments based on keys
   parse(args.asJava)
 
+  //create execution configurations for context
+  toExecutionConfig()
 
+  //update DB connection configurations
+  updateDBConns()
+
+  //validate YAML keys
+  validateConfigurations()
   def throwError(msg: String): Unit = throw new DataProcessException(msg)
 
-  def toMetaConfig(dataMetaPath: String): MetaConfig = {
-    null
-  }
+  def _validateRawFileKeys(value: Any): Any = ???
 
+  /**
+   * This method validates the YAML configuration files.
+   * It will use the [[ConfigBuilder]] from [[beans]] to get the
+   * required status, child units and type of values
+   * @param
+   */
+  def validateConfigurations(): Unit ={
+    var result = List.empty[Either[String,Boolean]]
+    //validate raw file info
+    result = result :+ ConfigurationValidator.validateRawFileInfo(this.executionConfig)
+    //validate validation details in YAML
+    result = result :+ ConfigurationValidator.validateValidationDetails(this.executionConfig)
+    if(result.forall(_.isRight)){
+      logger.info(s"Validation successful for the configuration data present in :$dataMetaPath")
+    }else{
+      logger.error((result.collect{
+        case Left(v) => v
+      }).mkString("\n"))
+      throwError(s" Improper deceleration in YAML file : $dataMetaPath")
+    }
+  }
+  /**
+   *  This method to convert the YAML metadata configurations to  execution config class
+   *  [[ ExecutionConfig]]
+   *
+   *  @param executionConfig : use an existing one or create new one
+   */
+  def toExecutionConfig(executionConfig: Option[ExecutionConfig] = None): ExecutionConfig = {
+    logger.info(s"Trying to load configuration content from YAML file in path : $dataMetaPath")
+    val content = FileSystemUtility.getFileContent(dataMetaPath)
+    val yaml = new Yaml(new Constructor())
+    val config = executionConfig.getOrElse(new ExecutionConfig)
+    this.executionConfig = yaml.load(content).asInstanceOf[java.util.LinkedHashMap[String, Any]].asScala.foldLeft(config){
+      case (config,(k,v) ) => config.set(k,v)
+    }
+    this.executionConfig
+  }
+  def updateDBConns() = {
+    if (null != this.executionConfig && null != dbConnPath){
+      logger.info(s"Trying to load Database connection configuration content from YAML file in path : $dbConnPath")
+      val content = FileSystemUtility.getFileContent(dbConnPath)
+      val yaml = new Yaml(new Constructor())
+      this.executionConfig = yaml.load(content).asInstanceOf[java.util.LinkedHashMap[String, Any]].asScala.foldLeft(executionConfig){
+        case (executionConfig,(k,v) ) => executionConfig.set(k,v)
+      }
+    }else{
+      logger.info("No DB connection details shared to this APP")
+    }
+  }
   override protected def handle(opt: String, value: String): Boolean = {
+    try{
     opt match {
       case INPUT_PATH =>
         inputPath = value
@@ -51,7 +114,9 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
         reportPath = value
       case META_CON_PATH =>
         dataMetaPath = value
-        metaConfig = toMetaConfig(dataMetaPath)
+        //metaConfig = toMetaConfig(dataMetaPath)
+      case DB_CON_PATH =>
+        dbConnPath = value
       case APP_NAME =>
         applicationName = value
       case JOIN_DATA_PAth =>
@@ -66,23 +131,27 @@ class DataEtlSubmitArguments(args : Seq[String], dataEnv: String = DataPipeline.
         logger.info(s"unexpected argument : $opt")
         throwError(s"unexpected argument : $opt")
     }
-    false
+    }catch{
+      case e: Exception  => logger.error(s"unaccepted argument or value for arg : $opt and passed value :$value")
+        throw e
+    }
+    true
   }
 
   override def toString: String = {
     val s = s"""
-                      These are the configs created : "
-                       | -inputPath -> $inputPath
-                       | -outputPath -> $outputPath
-                       | -validationPath -> $validationPath
-                       | -reportPath -> $reportPath
-                       | -dataMetaPath -> $dataMetaPath
-                       | -applicationName -> $applicationName
-                       | -joinDataPath -> $joinDataPath
-                       | -partition -> $partition
-                       | -hiveTable -> $hiveTable
-                       | -jobId -> $jobId
-                  """.stripMargin
+    These are the configs created :
+                   | -inputPath -> $inputPath
+                   | -outputPath -> $outputPath
+                   | -validationPath -> $validationPath
+                   | -reportPath -> $reportPath
+                   | -dataMetaPath -> $dataMetaPath
+                   | -applicationName -> $applicationName
+                   | -joinDataPath -> $joinDataPath
+                   | -partition -> $partition
+                   | -hiveTable -> $hiveTable
+                   | -jobId -> $jobId
+              """.stripMargin
     logger.info(s)
     s
   }
